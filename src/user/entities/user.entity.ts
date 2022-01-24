@@ -12,9 +12,9 @@ export class UserEntity {
   id: number;
 
   @Column()
-  firstName: string;
+  fullName: string;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
   @Column({ nullable: true })
