@@ -21,12 +21,6 @@ import { UserEntity } from 'src/user/entities/user.entity';
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
-  @UseGuards(JwtAuthGuard)
-  @Post()
-  create(@User() userId: number, @Body() createPostDto: CreatePostDto) {
-    return this.postService.create(createPostDto, userId);
-  }
-
   @Get()
   findAll() {
     return this.postService.findAll();
@@ -48,14 +42,24 @@ export class PostController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post()
+  create(@User() userId: number, @Body() createPostDto: CreatePostDto) {
+    return this.postService.create(createPostDto, userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postService.update(+id, updatePostDto);
+  update(
+    @User() userId: number,
+    @Param('id') id: string,
+    @Body() updatePostDto: UpdatePostDto,
+  ) {
+    return this.postService.update(+id, updatePostDto, userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postService.remove(+id);
+  remove(@User() userId: number, @Param('id') id: string) {
+    return this.postService.remove(+id, userId);
   }
 }

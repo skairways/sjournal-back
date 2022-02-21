@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -47,6 +51,7 @@ export class PostService {
 
   async search(dto: SearchPostDto) {
     const qb = this.repository.createQueryBuilder('p');
+    qb.leftJoinAndSelect('p.user', 'user');
     qb.limit(dto.limit || 0);
     qb.take(dto.take || 10);
 
@@ -91,7 +96,7 @@ export class PostService {
     return this.repository.findOne(id);
   }
 
-  async update(id: number, dto: UpdatePostDto) {
+  async update(id: number, dto: UpdatePostDto, userId: number) {
     const find = await this.repository.findOne(+id);
 
     if (!find) {
@@ -101,11 +106,15 @@ export class PostService {
     return this.repository.update(id, dto);
   }
 
-  async remove(id: number) {
+  async remove(id: number, userId: number) {
     const find = await this.repository.findOne(+id);
 
     if (!find) {
       throw new NotFoundException('Статья не найдена');
+    }
+
+    if (find.user.id !== userId) {
+      throw new ForbiddenException('Нет прав на удаление статьи');
     }
 
     return this.repository.delete(id);
